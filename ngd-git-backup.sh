@@ -5,7 +5,7 @@ TOKEN=$2
 WORK_DIR="$3/${ORGANISATION}"
 
 # Pull list of repositories from GitHub API
-REPO_LIST=$(curl -i https://api.github.com/orgs/$ORGANISATION/repos?access_token=$TOKEN | grep clone_url)
+REPO_LIST=$(curl -i https://api.github.com/orgs/$ORGANISATION/repos?access_token=$TOKEN'&per_page=200' | grep clone_url)
 
 # Create workdir if it doesnt exist
 if [ ! -d $WORK_DIR ]; then
