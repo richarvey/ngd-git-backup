@@ -16,19 +16,26 @@ The permissions should be set up with full repo access in order to allow the clo
 
 ### Running by hand
 
-The command requires three placement conditional variables to run.
+The command requires three placement conditional variables to run. This also takes an optional 4th argument where you can specify the number of projects in your organisation. This should only be used if your organisation has more than 200 projects.
 
 ```
 ./ngd-git-backup.sh ORGANISATION TOKEN WORK_DIR
 ```
 
-The script takes 3 arguments
+If your organisation has more than 200 projects:
 
-| Argument      | Example            | Description                | Notes             |
-|---------------|--------------------|----------------------------|-------------------|
-| ORGANISATION  | ngineered          | your organisation name     |                   |
-| TOKEN         | GHJKR678YfrktyREYE | your personal access token |                   |
-| WORK_DIR      | /home/backup       | directory for your backups | no trailing slash |
+```
+./ngd-git-backup.sh ORGANISATION TOKEN WORK_DIR PROJECT_LIMIT
+```
+
+The script takes 4 arguments.
+
+| Argument      | Example            | Description                        | Notes             |
+|---------------|--------------------|------------------------------------|-------------------|
+| ORGANISATION  | ngineered          | your organisation name             |                   |
+| TOKEN         | GHJKR678YfrktyREYE | your personal access token         |                   |
+| WORK_DIR      | /home/backup       | directory for your backups         | no trailing slash |
+| PROJECT_LIMIT | 201                | number of projects in organisation | optional          |
 
 ### Cron
 
