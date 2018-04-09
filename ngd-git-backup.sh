@@ -40,17 +40,25 @@ echo "$CURL_OUTPUT"|
 	printf("%s\t%s\t%s\n", $0, repo, clone_url)
 }'|
 	while IFS=$'\t' read -r REPO PROJECT CLONE_URL; do
-		echo Processing $REPO
+		echo "Processing $REPO in $PROJECT.git"
 		# Clone if the project doesn't exist locally
-		if [ ! -d $PROJECT ]; then
+		if [ ! -d "$PROJECT.git" ]; then
+			echo "Cloning into $PROJECT.gi"
+			if ! git clone --mirror "$CLONE_URL"; then
+				echo "Errors encountered while cloning $PROJECT.git/">&2
+				exit 1
+			fi
 		# Pull / update if the project does exist locally
-			echo "Cloning $PROJECT"
-			git clone $CLONE_URL || echo "Errors encountered while cloning $PROJECT">&2
-		elif [ -d $PROJECT ]; then
-			echo "Updating $PROJECT"
+		elif [ -d "$PROJECT.git" ]; then
+			echo "Updating $PROJECT.git"
 			(
-				cd $PROJECT
-				git pull || echo "Errors encountered while pulling $PROJECT">&2
+				cd "$PROJECT.git"
+				if ! git remote update; then
+					echo "Errors encountered while fetching in $PROJECT.git/">&2
+					exit 1
+				fi
 			)
+			test "$?" == 0 || exit 1
 		fi
 	done
+
