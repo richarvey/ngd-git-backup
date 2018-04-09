@@ -34,9 +34,9 @@ echo "$CURL_OUTPUT"|
 	gsub(/^ *"clone_url": "/, "");
 	gsub(/",$/, "");
 	repo=clone_url=$0
-	gsub(/^.*[/]/, "", repo);
+	gsub("^.*/", "", repo);
 	gsub(/.git$/, "", repo);
-	gsub(/^https:[/][/]/, "https://" token "@", clone_url);
+	gsub("^https://", "https://" token "@", clone_url);
 	printf("%s\t%s\t%s\n", $0, repo, clone_url)
 }'|
 	while IFS=$'\t' read -r REPO PROJECT CLONE_URL; do
