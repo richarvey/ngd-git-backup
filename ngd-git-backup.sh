@@ -43,7 +43,7 @@ echo "$CURL_OUTPUT"|
 		echo "Processing $REPO in $PROJECT.git"
 		# Clone if the project doesn't exist locally
 		if [ ! -d "$PROJECT.git" ]; then
-			echo "Cloning into $PROJECT.gi"
+			echo "Cloning into $PROJECT.git"
 			if ! git clone --mirror "$CLONE_URL"; then
 				echo "Errors encountered while cloning $PROJECT.git/">&2
 				exit 1
