@@ -44,7 +44,7 @@ echo "$CURL_OUTPUT"|
 		# Clone if the project doesn't exist locally
 		if [ ! -d "$PROJECT.git" ]; then
 			echo "Cloning into $PROJECT.git"
-			if ! git clone --mirror "$CLONE_URL"; then
+			if ! git clone --mirror "$CLONE_URL" --quiet; then
 				echo "Errors encountered while cloning $PROJECT.git/">&2
 				exit 1
 			fi
@@ -53,7 +53,7 @@ echo "$CURL_OUTPUT"|
 			echo "Updating $PROJECT.git"
 			(
 				cd "$PROJECT.git"
-				if ! git remote update; then
+				if ! git remote update 2>&1; then
 					echo "Errors encountered while fetching in $PROJECT.git/">&2
 					exit 1
 				fi
