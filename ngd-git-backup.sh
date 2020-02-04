@@ -10,7 +10,7 @@ if [ -z "$4" ]; then
 fi
 
 # Pull list of repositories from GitHub API
-CURL_OUTPUT=$(curl --silent --show-error --fail -i https://api.github.com/orgs/$ORGANISATION/repos?access_token=$TOKEN'&per_page='$PROJECT_LIMIT)
+CURL_OUTPUT=$(curl --silent --show-error --fail -i -H "Authorization: token $TOKEN" "https://api.github.com/orgs/$ORGANISATION/repos?&per_page=$PROJECT_LIMIT")
 if [ "$?" != 0 ]
 then
 	echo "Error fetching repo list from GitHub API $CURL_OUTPUT">&2
