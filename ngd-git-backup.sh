@@ -10,7 +10,13 @@ if [ -z "$4" ]; then
 fi
 
 # Pull list of repositories from GitHub API
-REPO_LIST=$(curl -i https://api.github.com/orgs/$ORGANISATION/repos?access_token=$TOKEN'&per_page='$PROJECT_LIMIT | grep clone_url)
+CURL_OUTPUT=$(curl --silent --show-error --fail -i -H "Authorization: token $TOKEN" "https://api.github.com/orgs/$ORGANISATION/repos?&per_page=$PROJECT_LIMIT")
+if [ "$?" != 0 ]
+then
+  echo "Error fetching repo list from GitHub API $CURL_OUTPUT">&2
+  exit 1
+fi
+REPO_LIST=$(echo "$CURL_OUTPUT" | grep clone_url)
 
 # Create workdir if it doesnt exist
 if [ ! -d $WORK_DIR ]; then
@@ -22,23 +28,36 @@ if [ ! -z $WORK_DIR ]; then
   cd $WORK_DIR
 fi
 
-for REPO in $REPO_LIST; do
-  if [[ $REPO != "\"clone_url\":" ]]; then
-    REPO=$(echo $REPO | tr -d "\"" | tr -d ",")
-    PROJECT=$(echo $REPO | awk -F '/' '{print $5} ' | awk -F '.' '{print $1} ')
-    # Clone if the project doesn't exisit locally
-    if [ ! -d $PROJECT ]; then
-      # cut https:// off to insert <token>@
-      REPO=$(echo $REPO | awk -F 'https://' '{print $2} ' )
-      echo "Cloning $PROJECT"
-      CLONE_URL=$(echo "https://"$TOKEN"@"$REPO)
-      git clone $CLONE_URL
+echo "$CURL_OUTPUT"|
+  awk "-vtoken=$TOKEN" '
+/^ *"clone_url": ".*",$/{
+  gsub(/^ *"clone_url": "/, "");
+  gsub(/",$/, "");
+  repo=clone_url=$0
+  gsub("^.*/", "", repo);
+  gsub(/.git$/, "", repo);
+  gsub("^https://", "https://" token "@", clone_url);
+  printf("%s\t%s\t%s\n", $0, repo, clone_url)
+}'|
+  while IFS=$'\t' read -r REPO PROJECT CLONE_URL; do
+    echo "Processing $REPO in $PROJECT.git"
+    # Clone if the project doesn't exist locally
+    if [ ! -d "$PROJECT.git" ]; then
+      echo "Cloning into $PROJECT.git"
+      if ! git clone --mirror "$CLONE_URL" --quiet; then
+        echo "Errors encountered while cloning $PROJECT.git/">&2
+        exit 1
+      fi
     # Pull / update if the project does exist locally
-    elif [ -d $PROJECT ]; then
-      cd $PROJECT
-      echo "Updating $PROJECT"
-      git pull
-      cd $WORK_DIR
+    elif [ -d "$PROJECT.git" ]; then
+      echo "Updating $PROJECT.git"
+      (
+        cd "$PROJECT.git"
+        if ! git remote update 2>&1; then
+          echo "Errors encountered while fetching in $PROJECT.git/">&2
+          exit 1
+        fi
+      )
+      test "$?" == 0 || exit 1
     fi
-  fi
-done
+  done
